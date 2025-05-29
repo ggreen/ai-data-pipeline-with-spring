@@ -12,6 +12,7 @@
 	<modules>
 		<module>applications/batching/customer-batch</module>
 		<module>applications/sinks/postgres-sink</module>
+		<module>applications/processors/postgres-query-processor</module>
 	</modules>
 	<build>
 		<pluginManagement>
