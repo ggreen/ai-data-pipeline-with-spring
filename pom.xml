@@ -11,6 +11,7 @@
 	<name>ai-data-pipeline-with-spring-showcase</name>
 	<modules>
 		<module>applications/batching/customer-batch</module>
+		<module>applications/sinks/postgres-sink</module>
 	</modules>
 	<build>
 		<pluginManagement>
