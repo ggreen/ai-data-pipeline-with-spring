@@ -10,6 +10,7 @@ import showcase.ai.data.pipeline.spring.customer.domain.Location;
 
 @Component
 public class CustomerFieldMapper implements FieldSetMapper<Customer> {
+    @Override
     public Customer mapFieldSet(FieldSet fieldSet) throws BindException {
 
 
