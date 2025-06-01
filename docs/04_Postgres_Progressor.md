@@ -63,17 +63,26 @@ insert into customer.phone_campaigns(phone,first_nm,last_nm, email) values('555-
 
 
 ```sql
-select  (CASE WHEN LENGTH(cust.last_nm) > 0  THEN cust.last_nm ELSE pc.last_nm END) as lastname,
+SELECT  (CASE WHEN LENGTH(cust.last_nm) > 0  THEN cust.last_nm ELSE pc.last_nm END) as lastname, 
         (CASE WHEN LENGTH(cust.first_nm) > 0  THEN cust.first_nm ELSE pc.first_nm END) as firstname, 
-        (CASE WHEN LENGTH(cust.email) > 0  THEN cust.last_nm ELSE pc.email END) as email,
-        cust.phone as phone 
-from (select 
-        'Entered Lasted Name' as last_nm, 
-        'Entered FirstName' as first_nm, 
-        'Entered Email' as email, 
-        '555-555-5551' as phone) cust
+        (CASE WHEN LENGTH(cust.email) > 0  THEN cust.last_nm ELSE pc.email END) as email, 
+        cust.phone as phone, 
+        cust.address as address, 
+        cust.city as city, 
+        cust.state as state, 
+        cust.zip as zip 
+FROM 
+    (select 
+        'Entered last name' as last_nm, 
+        'Entered first Name' as first_nm, 
+        'Entered email' as email, 
+        '555-555-5551' as phone, 
+        'Entered address' as address, 
+        'Entered city' as city, 
+        'Entered state' as state, 
+        'Entered zip' as zip ) cust 
 LEFT JOIN 
-     (select last_nm, first_nm, email, phone  from customer.phone_campaigns)  pc
+    (select last_nm, first_nm, email, phone  from customer.phone_campaigns)  pc 
 ON cust.phone = pc.phone;
 ```
 
@@ -81,21 +90,32 @@ ON cust.phone = pc.phone;
 From Phone Campaign
 
 ```sql
-select  (CASE WHEN LENGTH(cust.last_nm) > 0  THEN cust.last_nm ELSE pc.last_nm END) as lastname,
+SELECT  (CASE WHEN LENGTH(cust.last_nm) > 0  THEN cust.last_nm ELSE pc.last_nm END) as lastname, 
         (CASE WHEN LENGTH(cust.first_nm) > 0  THEN cust.first_nm ELSE pc.first_nm END) as firstname, 
-        (CASE WHEN LENGTH(cust.email) > 0  THEN cust.last_nm ELSE pc.email END) as email,
-        cust.phone as phone 
-from (select 
-       '' as last_nm, 
-       '' as first_nm, 
+        (CASE WHEN LENGTH(cust.email) > 0  THEN cust.last_nm ELSE pc.email END) as email, 
+        cust.phone as phone, 
+        cust.address as address, 
+        cust.city as city, 
+        cust.state as state, 
+        cust.zip as zip 
+FROM 
+    (select 
+        '' as last_nm, 
+        '' as first_nm, 
         '' as email, 
-        '555-555-5551' as phone) cust
+        '555-555-5551' as phone, 
+        'Entered address' as address, 
+        'Entered city' as city, 
+        'Entered state' as state, 
+        'Entered zip' as zip ) cust 
 LEFT JOIN 
-     (select last_nm, first_nm, email, phone  from customer.phone_campaigns)  pc
+    (select last_nm, first_nm, email, phone  from customer.phone_campaigns)  pc 
 ON cust.phone = pc.phone;
+
 ```
 
-==================================
+
+-------------------------------
 
 
 Start Http
