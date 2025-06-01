@@ -38,7 +38,63 @@ zip text NOT NULL,
  PRIMARY KEY (email)
 );
 
+
+create table customer.phone_campaigns(
+phone text NOT NULL,
+last_nm text  NOT NULL,
+first_nm text  NOT NULL,
+email text NOT NULL,
+ PRIMARY KEY (phone)
+);
 ```
+
+```shell
+docker cp applications/sinks/postgres-sink/src/test/resources/email_campaigns.csv psql:/tmp/email_campaigns.csv
+```
+
+
+In Psql
+
+```shell
+insert into customer.phone_campaigns(phone,first_nm,last_nm, email) values('555-555-5551','John','Matthews','jmatthews@email');
+insert into customer.phone_campaigns(phone,first_nm,last_nm, email) values('555-555-5552','Marcy','Love','mlove@email');
+```
+
+
+
+```sql
+select  (CASE WHEN LENGTH(cust.last_nm) > 0  THEN cust.last_nm ELSE pc.last_nm END) as lastname,
+        (CASE WHEN LENGTH(cust.first_nm) > 0  THEN cust.first_nm ELSE pc.first_nm END) as firstname, 
+        (CASE WHEN LENGTH(cust.email) > 0  THEN cust.last_nm ELSE pc.email END) as email,
+        cust.phone as phone 
+from (select 
+        'Entered Lasted Name' as last_nm, 
+        'Entered FirstName' as first_nm, 
+        'Entered Email' as email, 
+        '555-555-5551' as phone) cust
+LEFT JOIN 
+     (select last_nm, first_nm, email, phone  from customer.phone_campaigns)  pc
+ON cust.phone = pc.phone;
+```
+
+
+From Phone Campaign
+
+```sql
+select  (CASE WHEN LENGTH(cust.last_nm) > 0  THEN cust.last_nm ELSE pc.last_nm END) as lastname,
+        (CASE WHEN LENGTH(cust.first_nm) > 0  THEN cust.first_nm ELSE pc.first_nm END) as firstname, 
+        (CASE WHEN LENGTH(cust.email) > 0  THEN cust.last_nm ELSE pc.email END) as email,
+        cust.phone as phone 
+from (select 
+       '' as last_nm, 
+       '' as first_nm, 
+        '' as email, 
+        '555-555-5551' as phone) cust
+LEFT JOIN 
+     (select last_nm, first_nm, email, phone  from customer.phone_campaigns)  pc
+ON cust.phone = pc.phone;
+```
+
 ==================================
 
 
@@ -51,6 +107,11 @@ java -jar runtime/http-source-rabbit-5.0.1.jar --http.supplier.pathPattern=custo
 
 
 Start Processor
+
+
+```shell
+java -jar applications/processors/postgres-query-processor/target/postgres-query-processor-0.0.1-SNAPSHOT.jar --query.processor.sql="select  (CASE WHEN LENGTH(cust.last_nm) > 0  THEN cust.last_nm ELSE pc.last_nm END) as lastname, (CASE WHEN LENGTH(cust.first_nm) > 0  THEN cust.first_nm ELSE pc.first_nm END) as firstname, (CASE WHEN LENGTH(cust.email) > 0  THEN cust.last_nm ELSE pc.email END) as email, cust.phone as phone, cust.address as address, cust.city as city, cust.state as state, cust.zip as zip from (select :lastname as last_nm, :firstname as first_nm, :email as email, :phone as phone, :address as address, :city as city, :state as state, :zip as zip ) cust LEFT JOIN (select last_nm, first_nm, email, phone  from customer.phone_campaigns)  pc ON cust.phone = pc.phone" --spring.datasource.username=postgres --spring.datasource.url="jdbc:postgresql://localhost/postgres" --spring.datasource.driverClassName=org.postgresql.Driver --spring.cloud.stream.bindings.input.destination=customers.input.formatting --spring.cloud.stream.bindings.output.destination=customers.output.formatting
+```
 
 ```shell
 java -jar applications/processors/postgres-query-processor/target/postgres-query-processor-0.0.1-SNAPSHOT.jar --query.processor.sql="select :email as email,initcap(:firstname) as firstname,initcap(:lastname) as lastname,:phone as phone,:address as address,:city as city,:state as state,:zip as zip" --spring.datasource.username=postgres --spring.datasource.url="jdbc:postgresql://localhost/postgres" --spring.datasource.driverClassName=org.postgresql.Driver --spring.cloud.stream.bindings.input.destination=customers.input.formatting --spring.cloud.stream.bindings.output.destination=customers.output.formatting
@@ -65,6 +126,24 @@ java -jar applications/sinks/postgres-sink/target/postgres-sink-0.0.1-SNAPSHOT.j
 
 
 
+```shell
+curl -X 'POST' \
+  'http://localhost:8091/customers' \
+  -H 'accept: */*' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "email" : "",
+  "firstname" : "",
+  "lastname" : "",
+  "phone" : "555-555-5551",
+  "address" : "55 Straight St",
+  "city" : "gold",
+  "state": "ny",
+  "zip": "55555"
+}'
+```
+
+
 
 ```shell
 curl -X 'POST' \
@@ -73,7 +152,7 @@ curl -X 'POST' \
   -H 'Content-Type: application/json' \
   -d '{
   "email" : "jmatthews@email",
-  "firstname" : "Lonny",
+  "firstname" : "Jonny",
   "lastname" : "matthews",
   "phone" : "555-555-5555",
   "address" : "55 Straight St",
