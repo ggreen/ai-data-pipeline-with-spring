@@ -48,10 +48,6 @@ email text NOT NULL,
 );
 ```
 
-```shell
-docker cp applications/sinks/postgres-sink/src/test/resources/email_campaigns.csv psql:/tmp/email_campaigns.csv
-```
-
 
 In Psql
 
