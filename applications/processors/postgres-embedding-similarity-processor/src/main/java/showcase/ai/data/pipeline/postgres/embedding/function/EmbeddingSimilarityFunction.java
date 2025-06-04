@@ -50,15 +50,19 @@ public class EmbeddingSimilarityFunction implements Function<String,List<Documen
         log.info("Saving into vector store");
         vectorStore.add(of(payloadDocument));
 
-        log.info("Searching simarities");
-        var similarities = vectorStore.similaritySearch(SearchRequest.builder().query(payload)
+
+        var criteria = SearchRequest.builder().query(payload)
                 .topK(properties.getTopK())
-                .similarityThreshold(properties.getSimilarityThreshold())
 //                .filterExpression(
 //                        new FilterExpressionBuilder()
-//                                .ne("id", payloadDocument.getId()).build())
+//                                .ne("email", payloadDocument.getId()).build())
                 .query(text)
-                .build());
+                .similarityThreshold(properties.getSimilarityThreshold())
+                .build();
+
+        log.info("Searching criteria: {}",criteria);
+
+        var similarities = vectorStore.similaritySearch(criteria);
 
         log.info("similarities: {}", similarities);
 

@@ -59,8 +59,17 @@ java -jar runtime/http-source-rabbit-5.0.1.jar --http.supplier.pathPattern=custo
 java -jar applications/processors/postgres-embedding-similarity-processor/target/postgres-embedding-similarity-processor-0.0.1-SNAPSHOT.jar --spring.datasource.username=postgres --spring.datasource.url="jdbc:postgresql://localhost:6432/postgresml" --spring.datasource.driverClassName=org.postgresql.Driver --spring.cloud.stream.bindings.input.destination=customers.similarities.input --spring.cloud.stream.bindings.output.destination=customers.similarities.output --embedding.similarity.processor.topK=3 --embedding.similarity.processor.similarityThreshold="0.90" --embedding.similarity.processor.documentTextFieldNames="email,phone,zip,state,city,address,lastName,firstName" --spring.datasource.hikari.max-lifetime=600000 --spring.cloud.stream.bindings.input.group=postgres-query-processor
 ```
 
-```shell
-http-customer-similarity=http | postgres-embedding-similarity | postgres
+
+
+Distance 0
+
+```sql
+SELECT '[1, 0, 0]' <=> '[1, 0, 0]' AS cosine_distance;
+```
+
+Non Zero Distance
+```sql
+SELECT '[1, 1, 0]' <=> '[1, 0, 0]' AS cosine_distance;
 ```
 
 
@@ -97,7 +106,7 @@ curl -X 'POST' \
   "phone" : "555-555-5555",
   "address" : "12 Straight St",
   "city" : "gold",
-  "state" "ny",
+  "state" : "ny",
   "zip": "55555"
 }'
 ```
@@ -137,4 +146,20 @@ select * from customer.feedback;
                   "state" : "ny",
                   "zip": "55555"
                 }
+```
+
+
+Not working
+
+
+```sql
+[SELECT *, embedding <=> ? AS distance FROM public.vector_store WHERE embedding <=> ? < ?  AND metadata::jsonb @@ '$.id != "email@email"'::jsonpath  ORDER BY distance LIMIT ? ]
+
+```
+
+
+working
+
+```sql
+SELECT *, embedding <=> ? AS distance FROM public.vector_store WHERE embedding <=> ? < ?  ORDER BY distance LIMIT ?
 ```

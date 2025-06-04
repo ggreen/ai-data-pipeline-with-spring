@@ -1,7 +1,6 @@
 package showcase.ai.data.pipeline.postgres.embedding.conversion;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -82,6 +81,8 @@ class PayloadToDocumentTest {
 
         when(properties.getDocumentTextFieldNames()).thenReturn(fields);
 
-        Assertions.assertDoesNotThrow( () -> subject.convert(payload));
+        var actual=subject.convert(payload);
+
+        assertThat(actual.getText()).isNotNull();
     }
 }
