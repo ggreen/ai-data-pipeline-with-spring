@@ -1,18 +1,18 @@
 package showcase.ai.data.pipeline.postgres.embedding.function;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import nyla.solutions.core.patterns.conversion.Converter;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 import org.springframework.stereotype.Component;
+import showcase.ai.data.pipeline.postgres.embedding.domain.SimilarDocuments;
 import showcase.ai.data.pipeline.postgres.embedding.properties.EmbeddingSimilarityProperties;
 
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static java.util.List.of;
 
@@ -23,7 +23,7 @@ import static java.util.List.of;
  */
 @Component
 @Slf4j
-public class EmbeddingSimilarityFunction implements Function<String,List<Document> > {
+public class EmbeddingSimilarityFunction implements Function<String,SimilarDocuments > {
     private final VectorStore vectorStore;
     private final EmbeddingSimilarityProperties properties;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -36,7 +36,7 @@ public class EmbeddingSimilarityFunction implements Function<String,List<Documen
     }
 
     @Override
-    public List<Document> apply(String payload) {
+    public SimilarDocuments apply(String payload) {
 
         log.info("payload: {}: properties: {}", payload, properties);
         var payloadDocument = converter.convert(payload);
@@ -66,17 +66,21 @@ public class EmbeddingSimilarityFunction implements Function<String,List<Documen
 
         log.info("similarities: {}", similarities);
 
-        return filter(payloadDocument, similarities);
+        var similarDocuments =  toSimilarDocuments(payloadDocument, similarities);
 
+        log.info("Returning similarDocuments: {}", similarDocuments);
+
+        return similarDocuments;
     }
 
     /**
-     *
+     *Build SimilarDocuments based on the similarity document results
      * @param payloadDocument the payloadDocument
-     * @param similarities
-     * @return
+     * @param similarities the list of similar documents
+     * @return the results
      */
-    List<Document> filter(Document payloadDocument, List<Document> similarities){
+    @SneakyThrows
+    SimilarDocuments toSimilarDocuments(Document payloadDocument, List<Document> similarities){
 
         if(similarities == null || similarities.isEmpty())
             return null;
@@ -85,6 +89,9 @@ public class EmbeddingSimilarityFunction implements Function<String,List<Documen
                 .filter(resultDoc -> !resultDoc.getId().equals(payloadDocument.getId()))
                 .toList();
 
-        return !filtered.isEmpty() ? filtered : null;
+        String filteredPayload = objectMapper.writeValueAsString(filtered);
+        return !filtered.isEmpty() ?
+                SimilarDocuments.builder().id(payloadDocument.getId()).similaritiesPayload(filteredPayload).build()
+                : null;
     }
 }

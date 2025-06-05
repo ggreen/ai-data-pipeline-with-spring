@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import showcase.ai.data.pipeline.postgres.embedding.domain.SimilarDocuments;
 import showcase.ai.data.pipeline.postgres.embedding.properties.EmbeddingSimilarityProperties;
 
 import java.util.Collections;
@@ -61,9 +62,10 @@ class EmbeddingSimilarityFunctionTest {
         when(vectorStore.similaritySearch(any(SearchRequest.class))).thenReturn(List.of(resultDocument));
         when(resultDocument.getId()).thenReturn("Different Id");
 
-        var actual = subject.apply(payload);
+        SimilarDocuments actual = subject.apply(payload);
 
-       assertThat(actual).isNotNull().isNotEmpty();
+
+       assertThat(actual).isNotNull();
     }
 
     @Test
