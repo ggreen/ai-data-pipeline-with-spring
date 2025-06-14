@@ -17,7 +17,6 @@ import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
-import org.springframework.batch.support.transaction.ResourcelessTransactionManager;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -39,6 +38,14 @@ public class BatchConfig {
 
     @Value("${spring.batch.chuck.size:10}")
     private int chunkSize;
+
+    //INSERT INTO customer.customers (first_name, last_name,email) VALUES (:firstName, :lastName, :contact.email)
+    private static final String saveSql = """
+    insert into customer.customers(email,first_nm,last_nm,phone,address,city,state,zip) 
+    values (:email,:firstName,:lastName,:phone, :address,:city,:state,:zip) 
+    on CONFLICT (email) 
+    DO UPDATE SET first_nm = :firstName, last_nm = :lastName,  phone = :phone, address = :address, city = :city, state = :state, zip = :zip
+    """;
 
 
     @Value("${source.input.file.csv}")
@@ -102,8 +109,9 @@ public class BatchConfig {
 
     @Bean
     public JdbcBatchItemWriter<Customer> writer(DataSource dataSource) {
+
         return new JdbcBatchItemWriterBuilder<Customer>()
-                .sql("INSERT INTO customer.customers (first_name, last_name,email) VALUES (:firstName, :lastName, :contact.email)")
+                .sql(saveSql)
                 .itemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<>())
                 .dataSource(dataSource)
                 .build();
