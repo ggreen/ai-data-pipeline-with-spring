@@ -72,6 +72,20 @@ curl -X 'POST' \
 }'
 ```
 
+```json
+{
+  "email" : "email@email",
+  "firstName" : "Josiah",
+  "lastName" : "Imani",
+  "phone" : "555-555-5555",
+  "address" : "12 Straight St",
+  "city" : "gold",
+  "state": "ny",
+  "zip": "55555"
+}
+
+```
+
 
 In psql 
 
