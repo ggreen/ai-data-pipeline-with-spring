@@ -23,7 +23,7 @@ drop  schema customer cascade;
 Run batch
 
 ```shell
-java -jar applications/batching/customer-batch/target/customer-batch-0.0.1-SNAPSHOT.jar --source.input.file.csv="file:./applications/batching/customer-batch/src/test/resources/sources/customers.csv"
+java -jar applications/batching/customer-batch/target/customer-batch-0.0.1-SNAPSHOT.jar --source.input.file.csv="file:./applications/batching/customer-batch/src/test/resources/sources/customers.csv" --processor.output.error.file.csv="file:./runtime/invalid_customers.csv"
 ```
 
 

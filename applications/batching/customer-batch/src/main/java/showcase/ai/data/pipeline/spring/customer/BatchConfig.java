@@ -41,12 +41,24 @@ public class BatchConfig {
 
     //INSERT INTO customer.customers (first_name, last_name,email) VALUES (:firstName, :lastName, :contact.email)
     private static final String saveSql = """
-    insert into customer.customers(email,first_nm,last_nm,phone,address,city,state,zip) 
-    values (:email,:firstName,:lastName,:phone, :address,:city,:state,:zip) 
-    on CONFLICT (email) 
-    DO UPDATE SET first_nm = :firstName, last_nm = :lastName,  phone = :phone, address = :address, city = :city, state = :state, zip = :zip
+        insert into customer.customers(email,first_name,last_name,phone,address,city,state,zip) 
+        values (:contact.email,
+                :firstName,
+                :lastName,
+                :contact.phone, 
+                :location.address,
+                :location.city,
+                :location.state,
+                :location.zip) 
+        on CONFLICT (email) 
+        DO UPDATE SET first_name = :firstName, 
+                last_name = :lastName,  
+                phone   = :contact.phone, 
+                address = :location.address, 
+                city    = :location.city, 
+                state   = :location.state, 
+                zip     = :location.zip
     """;
-
 
     @Value("${source.input.file.csv}")
     private Resource customerInputResource;
@@ -71,7 +83,7 @@ public class BatchConfig {
      *
      * @param jobRepository the job
      * @param taskExecutor the task executor
-     * @return the job laudn
+     * @return the job launch
      */
     @Bean
     public JobLauncher batchJobLauncher(@Qualifier("resourcelessJobRepository") JobRepository jobRepository,
