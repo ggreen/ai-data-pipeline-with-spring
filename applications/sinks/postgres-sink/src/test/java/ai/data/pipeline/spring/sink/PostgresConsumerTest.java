@@ -1,4 +1,4 @@
-package showcase.ai.data.orchestration.scdf.processors;
+package ai.data.pipeline.spring.sink;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,19 +13,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import showcase.ai.data.orchestration.scdf.data.Customer;
+import ai.data.pipeline.spring.data.Customer;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest
 @SpringJUnitConfig
 @SpringRabbitTest
-class SqlConsumerTest {
+class PostgresConsumerTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
     @Autowired
-    private SqlConsumer subject;
+    private PostgresConsumer subject;
 
     @Autowired
     private ObjectMapper objectMapper;
