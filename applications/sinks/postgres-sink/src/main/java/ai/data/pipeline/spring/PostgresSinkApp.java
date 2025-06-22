@@ -1,13 +1,13 @@
-package showcase.ai.data.orchestration.scdf;
+package ai.data.pipeline.spring;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SqlConsumerSinkApp {
+public class PostgresSinkApp {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SqlConsumerSinkApp.class, args);
+		SpringApplication.run(PostgresSinkApp.class, args);
 	}
 
 }
