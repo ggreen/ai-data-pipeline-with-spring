@@ -10,15 +10,16 @@ docker run -it --name rabbitmq   --rm  -p 5672:5672 -p 15672:15672  rabbitmq:4.1
 ```
 
 ```shell
-docker run --name postgresql --network data-pipelines --rm  -e POSTGRESQL_USERNAME=postgres -e ALLOW_EMPTY_PASSWORD=true -e POSTGRESQL_DATABASE=postgres -p 5432:5432 bitnami/postgresql:latest 
+docker run -it --name postgresql  --network data-pipelines --rm  -e POSTGRESQL_USERNAME=postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres
 ```
+
 
 psql 
 
 ```shell
 docker run --name psql -it --rm \
 --network data-pipelines \
-    bitnami/postgresql:latest psql -h postgresql -U postgres
+    postgres psql -h postgresql -U postgres
 ```
 
 
@@ -37,7 +38,6 @@ state text ,
 zip text NOT NULL,
  PRIMARY KEY (email)
 );
-
 ```
 
 Build application
@@ -47,7 +47,7 @@ mvn package
 ```
 
 ```shell
-java -jar applications/sinks/postgres-sink/target/postgres-sink-0.0.1-SNAPSHOT.jar --spring.datasource.username=postgres --spring.datasource.driverClassName=org.postgresql.Driver --spring.datasource.url="jdbc:postgresql://localhost/postgres" --sql.consumer.sql="insert into customer.customers(email,first_nm,last_nm,phone,address,city,state,zip) values (:email,:firstName,:lastName,:phone, :address,:city,:state,:zip) on CONFLICT (email) DO UPDATE SET first_nm = :firstName, last_nm = :lastName,  phone = :phone, address = :address, city = :city, state = :state, zip = :zip" --spring.cloud.stream.bindings.input.destination=customers.intake
+java -jar applications/sinks/postgres-sink/target/postgres-sink-0.0.1-SNAPSHOT.jar --spring.datasource.username=postgres --spring.datasource.password=postgres --spring.datasource.driverClassName=org.postgresql.Driver --spring.datasource.url="jdbc:postgresql://localhost/postgres" --sql.consumer.sql="insert into customer.customers(email,first_nm,last_nm,phone,address,city,state,zip) values (:email,:firstName,:lastName,:phone, :address,:city,:state,:zip) on CONFLICT (email) DO UPDATE SET first_nm = :firstName, last_nm = :lastName,  phone = :phone, address = :address, city = :city, state = :state, zip = :zip" --spring.cloud.stream.bindings.input.destination=customers.intake
 ```
 
 
@@ -70,6 +70,20 @@ curl -X 'POST' \
   "state": "ny",
   "zip": "55555"
 }'
+```
+
+```json
+{
+  "email" : "email@email",
+  "firstName" : "Josiah",
+  "lastName" : "Imani",
+  "phone" : "555-555-5555",
+  "address" : "12 Straight St",
+  "city" : "gold",
+  "state": "ny",
+  "zip": "55555"
+}
+
 ```
 
 
@@ -146,7 +160,7 @@ curl -X 'POST' \
 ```sql
 select * from customer.customers;
 ```
-Change Jack Smith Information
+Change Jack Smith Information: ex: address 333 Straight St"
 
 ```shell
 curl -X 'POST' \

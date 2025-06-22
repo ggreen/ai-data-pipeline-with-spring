@@ -1,4 +1,4 @@
-package showcase.ai.data.orchestration.scdf.data;
+package ai.data.pipeline.spring.data;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
