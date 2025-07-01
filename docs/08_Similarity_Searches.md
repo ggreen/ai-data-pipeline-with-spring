@@ -1,6 +1,10 @@
 Run Rabbit
 
 ```shell
+docker network create data-pipeline
+```
+
+```shell
 docker run -it --name rabbitmq   --rm  -p 5672:5672 -p 15672:15672  rabbitmq:4.1.0-management 
 ```
 
@@ -11,6 +15,22 @@ Run Postgres
 ```shell
 docker run --name postgresql --network data-pipeline --rm  -e POSTGRESQL_USERNAME=postgres -e ALLOW_EMPTY_PASSWORD=true -e POSTGRESQL_DATABASE=postgres -p 5432:5432 bitnami/postgresql:latest 
 ```
+
+```shell
+docker exec -it postgresql psql -U postgres
+```
+
+
+```shell
+create  schema  if not exists customer ;
+
+create table customer.customer_similarities(
+    customer_id text NOT NULL,
+    similarities jsonb NOT NULL,
+ PRIMARY KEY (customer_id)
+);
+```
+
 
 Run PostgresML
 
@@ -27,21 +47,23 @@ docker run --rm --name postgresml \
 
 
 ```shell
-docker run --name psql -it --rm \
+docker run --name psql-ml -it --rm \
 --network data-pipeline \
     bitnami/postgresql:latest psql -h postgresml  -U postgres -d postgresml
 ```
 
+Distance 0
 
-```shell
-create  schema  if not exists customer ;
-
-create table customer.customer_similarities(
-    customer_id text NOT NULL,
-    similarities jsonb NOT NULL,
- PRIMARY KEY (customer_id)
-);
+```sql
+SELECT '[1, 0, 0]' <=> '[1, 0, 0]' AS cosine_distance;
 ```
+
+Non Zero Distance
+```sql
+SELECT '[1, 1, 0]' <=> '[1, 0, 0]' AS cosine_distance;
+```
+
+
 
 ---------------------------
 
@@ -61,16 +83,6 @@ java -jar applications/processors/postgres-embedding-similarity-processor/target
 
 
 
-Distance 0
-
-```sql
-SELECT '[1, 0, 0]' <=> '[1, 0, 0]' AS cosine_distance;
-```
-
-Non Zero Distance
-```sql
-SELECT '[1, 1, 0]' <=> '[1, 0, 0]' AS cosine_distance;
-```
 
 
 Start Sink
