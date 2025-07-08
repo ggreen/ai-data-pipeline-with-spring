@@ -5,12 +5,12 @@ spring:
     name: ai-sentiment-processor
   cloud:
     function:
-      definition: embeddingSimilarityFunction
+      definition: customerFeedbackSentimentProcessor
     stream:
       function:
         bindings:
-          embeddingSimilarityFunction-in-0: input
-          embeddingSimilarityFunction-out-0: output
+          customerFeedbackSentimentProcessor-in-0: input
+          customerFeedbackSentimentProcessor-out-0: output
       binder:
         connection-name-prefix: ${spring.application.name}
       bindings:

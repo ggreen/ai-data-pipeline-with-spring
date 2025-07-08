@@ -4,6 +4,7 @@ Run Rabbit
 docker network create data-pipeline
 ```
 
+start rabbitmq
 ```shell
 docker run -it --name rabbitmq   --rm  -p 5672:5672 -p 15672:15672  rabbitmq:4.1.0-management 
 ```
@@ -11,7 +12,6 @@ docker run -it --name rabbitmq   --rm  -p 5672:5672 -p 15672:15672  rabbitmq:4.1
 
 Run Postgres
 
-```shell
 ```shell
 docker run --name postgresql --network data-pipeline --rm  -e POSTGRESQL_USERNAME=postgres -e ALLOW_EMPTY_PASSWORD=true -e POSTGRESQL_DATABASE=postgres -p 5432:5432 bitnami/postgresql:latest 
 ```
@@ -24,12 +24,30 @@ docker exec -it postgresql psql -U postgres
 ```shell
 create  schema  if not exists customer ;
 
-create table customer.customer_similarities(
-    customer_id text NOT NULL,
-    similarities jsonb NOT NULL,
- PRIMARY KEY (customer_id)
+create table customer.feedback(
+    feed_id text NOT NULL,
+    email text NOT NULL,
+    user_feedback text NOT NULL,
+    summary text NOT NULL,
+    feedback_dt timestamp NOT NULL DEFAULT NOW(),
+    sentiment text NOT NULL,
+ PRIMARY KEY (feed_id)
 );
 ```
+
+Run PostgresML
+
+```shell
+docker run --rm --name postgresml \
+    -it \
+    --network data-pipelines  \
+    -v postgresml_data:/var/lib/postgresql \
+    -p 6432:5432 \
+    -p 8000:8000 \
+    ghcr.io/postgresml/postgresml:2.10.0 \
+    sudo -u postgresml psql -d postgresml
+```
+
 
 
 Start Ollama
@@ -44,6 +62,12 @@ pull and run a model like this:
 ollama run llama3
 ```
 
+Test with llama3 model with the following
+
+```shell
+Analyze the sentiment of this text: "Hello my name is John Smith. I am long time customer. It seems that every time I call the help desk there is a very long wait . When I follow get someone on the line, I have the repeat to repeat the process of the provide the details.".
+            Respond with only one word: Positive or Negative.
+```
 
 ---------------------------
 
@@ -64,7 +88,7 @@ java -jar applications/processors/postgres-query-processor/target/postgres-query
 Start Processor Text sentiment
 
 ```shell
-java -jar applications/processors/postgres-query-processor/target/postgres-query-processor-0.0.1-SNAPSHOT.jar --spring.datasource.username=postgres --spring.datasource.url="jdbc:postgresql://localhost:6432/postgresml" --spring.datasource.driverClassName=org.postgresql.Driver --spring.cloud.stream.bindings.input.destination=customers.output.feedback.summary --spring.cloud.stream.bindings.output.destination=customers.output.feedback.sentiment --spring.config.import=optional:file:///Users/Projects/solutions/ai-ml/dev/ai-data-pipeline-with-spring-showcase/applications/processors/postgres-query-processor/src/main/resources/sentiment-analysis.yml --spring.datasource.hikari.max-lifetime=600000 --spring.cloud.stream.bindings.input.group=postgres-query-processor
+java -jar applications/processors/ai-sentiment-processor/target/ai-sentiment-processor-0.0.1-SNAPSHOT.jar --spring.cloud.stream.bindings.input.destination=customers.output.feedback.summary --spring.cloud.stream.bindings.output.destination=customers.output.feedback.sentiment
 ```
 
 
@@ -73,41 +97,9 @@ Start Sink
 
 
 ```shell
-java -jar applications/sinks/postgres-sink/target/postgres-sink-0.0.1-SNAPSHOT.jar --spring.datasource.username=postgres --spring.datasource.driverClassName=org.postgresql.Driver --spring.datasource.url="jdbc:postgresql://localhost/postgres"  --spring.cloud.stream.bindings.input.destination=customers.output.feedback.sentiment --spring.config.import=optional:file:///Users/Projects/solutions/ai-ml/dev/ai-data-pipeline-with-spring-showcase/applications/sinks/postgres-sink/src/main/resources/postgres-sentiment-analysis.yml --spring.cloud.stream.bindings.input.group=postgres-sink
+java -jar applications/sinks/postgres-sink/target/postgres-sink-0.0.1-SNAPSHOT.jar --spring.datasource.username=postgres --spring.datasource.driverClassName=org.postgresql.Driver --spring.datasource.url="jdbc:postgresql://localhost/postgres"  --spring.cloud.stream.bindings.input.destination=customers.output.feedback.sentiment --spring.config.import=optional:file:///Users/Projects/solutions/ai-ml/dev/ai-data-pipeline-with-spring-showcase/applications/sinks/postgres-sink/src/main/resources/postgres-sentiment-analysis-ollama.yml --spring.cloud.stream.bindings.input.group=postgres-sink
 ```
 
-
-
-```shell
-http-text-sentiment=http | summarize: postgres-query | sentiment: postgres-query | postgres
-```
-
-
-Deploy
-
-```properties
-app.http.path-pattern=feedback
-app.http.server.port=8094
-
-app.summarize.spring.datasource.username=postgres
-app.summarize.spring.datasource.url="jdbc:postgresql://localhost:6432/postgresml"
-app.summarize.spring.datasource.driverClassName=org.postgresql.Driver
-app.summarize.spring.config.import=optional:file:///Users/Projects/solutions/ai-ml/dev/ai-data-pipelines-with-scdf-showcase/applications/processors/postgres-query-processor/src/main/resources/text-summarization.yml
-app.summarize.spring.datasource.hikari.max-lifetime=600000
-
-app.sentiment.spring.datasource.username=postgres
-app.sentiment.spring.datasource.url="jdbc:postgresql://localhost:6432/postgresml"
-app.sentiment.spring.datasource.driverClassName=org.postgresql.Driver
-app.sentiment.spring.config.import=optional:file:///Users/Projects/solutions/ai-ml/dev/ai-data-pipelines-with-scdf-showcase/applications/processors/postgres-query-processor/src/main/resources/sentiment-analysis.yml
-app.sentiment.spring.datasource.hikari.max-lifetime=600000
-
-
-app.postgres.spring.datasource.username=postgres
-app.postgres.spring.datasource.url="jdbc:postgresql://localhost:6432/postgresml"
-app.postgres.spring.config.import=optional:file:///Users/Projects/solutions/ai-ml/dev/ai-data-pipelines-with-scdf-showcase/applications/sinks/postgres-sink/src/main/resources/postgres-sentiment-analysis.yml
-app.postgres.spring.datasource.driverClassName=org.postgresql.Driver
-app.postgres.spring.datasource.hikari.max-lifetime=600000
-```
 
 
 ```shell
