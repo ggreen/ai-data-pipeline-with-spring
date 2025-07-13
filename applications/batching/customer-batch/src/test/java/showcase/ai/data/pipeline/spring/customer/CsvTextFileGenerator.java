@@ -9,6 +9,11 @@ import showcase.ai.data.pipeline.spring.customer.domain.Customer;
 import java.io.IOException;
 import java.nio.file.Paths;
 
+/**
+ * Generate random customer records in CSV
+ *
+ * @author Gregory Green
+ */
 public class CsvTextFileGenerator {
 
     public static void main(String[] args) throws IOException {

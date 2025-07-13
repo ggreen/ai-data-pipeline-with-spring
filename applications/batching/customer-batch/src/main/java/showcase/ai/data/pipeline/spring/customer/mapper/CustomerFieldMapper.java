@@ -8,6 +8,10 @@ import showcase.ai.data.pipeline.spring.customer.domain.Contact;
 import showcase.ai.data.pipeline.spring.customer.domain.Customer;
 import showcase.ai.data.pipeline.spring.customer.domain.Location;
 
+/**
+ * Create a customer record from a Field Set
+ * @author  Gregory Green
+ */
 @Component
 public class CustomerFieldMapper implements FieldSetMapper<Customer> {
     @Override

@@ -10,6 +10,7 @@ import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.repository.support.ResourcelessJobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
@@ -131,12 +132,14 @@ public class BatchConfig {
 
     @Bean
     public Step loadCustomerStep(ItemReader<Customer> itemReader,
+                                 ItemProcessor<Customer, Customer> processor,
                                  ItemWriter<Customer> writer,
                                  JobRepository jobRepository,
                                  PlatformTransactionManager transactionManager) {
         return new StepBuilder("loadCustomerStep", jobRepository)
                 .<Customer, Customer>chunk(chunkSize,transactionManager)
                 .reader(itemReader)
+                .processor(processor)
                 .writer(writer)
                 .build();
     }
