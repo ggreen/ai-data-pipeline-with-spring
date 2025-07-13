@@ -20,10 +20,12 @@ public class CsvConfig {
     @Bean
     CsvWriter csvWriter() throws IOException {
         var path = invalid_customers_csv.getFile().toPath();
-        var directory = Files.createDirectory(path.getParent());
 
-        log.info("directory: {}",directory);
-
+        if(!Files.exists(path.getParent())){
+            //create directory if it does exist
+            var directory = Files.createDirectory(path.getParent());
+            log.info("directory: {}",directory);
+        }
         return new CsvWriter(path.toFile());
     }
 }
