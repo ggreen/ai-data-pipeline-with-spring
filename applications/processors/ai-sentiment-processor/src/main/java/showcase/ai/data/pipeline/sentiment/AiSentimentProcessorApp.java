@@ -4,8 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class AiSentimentProcessor {
+public class AiSentimentProcessorApp {
     public static void main(String[] args) {
-        SpringApplication.run(AiSentimentProcessor.class,args);
+        SpringApplication.run(AiSentimentProcessorApp.class,args);
     }
 }

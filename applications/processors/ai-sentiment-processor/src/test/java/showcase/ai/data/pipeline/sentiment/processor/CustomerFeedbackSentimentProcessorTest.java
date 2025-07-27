@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.api.Advisor;
 import showcase.ai.data.pipeline.sentiment.domains.CustomerFeedback;
 import showcase.ai.data.pipeline.sentiment.domains.FeedbackSentiment;
 
@@ -31,20 +32,27 @@ class CustomerFeedbackSentimentProcessorTest {
     private ChatClient.ChatClientRequestSpec user;
     @Mock
     private ChatClient.CallResponseSpec callResponse;
+    @Mock
+    private Advisor advisor;
+
+    @Mock
+    private ChatClient.ChatClientRequestSpec advisors;
 
     @BeforeEach
     void setUp() {
-        subject = new CustomerFeedbackSentimentProcessor(chatClient);
+        subject = new CustomerFeedbackSentimentProcessor(chatClient,advisor);
     }
 
     @Test
     void positiveSentiment() {
 
-        FeedbackSentiment expected = FeedbackSentiment.builder().customerFeedback(customerFeedback).sentiment(FeedbackSentiment.Sentiment.Positive).build();
+        FeedbackSentiment expected = FeedbackSentiment
+                .builder().customerFeedback(customerFeedback).sentiment(FeedbackSentiment.Sentiment.Positive).build();
 
         when(chatClient.prompt()).thenReturn(prompt);
         when(prompt.user(any(Consumer.class))).thenReturn(user);
-        when(user.call()).thenReturn(callResponse);
+        when(user.advisors(any(Advisor.class))).thenReturn(advisors);
+        when(advisors.call()).thenReturn(callResponse);
         when(callResponse.entity(any(Class.class))).thenReturn(expected.sentiment());
 
         var actual = subject.apply(customerFeedback);
